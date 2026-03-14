@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Donor Map — eBloodBank</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Leaflet.js — FREE open source maps (no API key needed!) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    :root{--red:#C0152A;--red-dk:#8B0000;--red-lt:#FFF0F2;--green:#16A34A;--green-lt:#DCFCE7;--blue:#1D4ED8;--blue-lt:#DBEAFE;--bg:#F4F6F9;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;}
+
+    /* TOP BAR */
+    .topbar{background:var(--red);color:white;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:white;}
+    .topbar-logo span{font-size:1.1rem;font-weight:700;}
+    .back-btn{padding:7px 14px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.2s;text-decoration:none;display:flex;align-items:center;gap:6px;}
+    .back-btn:hover{background:rgba(255,255,255,0.3);}
+
+    /* LAYOUT */
+    .layout{display:flex;flex:1;overflow:hidden;}
+
+    /* SIDEBAR */
+    .panel{width:340px;background:white;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+    .panel-head{padding:16px 20px;border-bottom:1px solid var(--border);}
+    .panel-head h2{font-size:1rem;font-weight:700;margin-bottom:12px;}
+
+    /* SEARCH CONTROLS */
+    .ctrl{display:flex;flex-direction:column;gap:8px;}
+    .ctrl select,.ctrl input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Roboto',sans-serif;font-size:0.85rem;color:var(--text);background:white;outline:none;transition:border-color 0.2s;}
+    .ctrl select:focus,.ctrl input:focus{border-color:var(--red);}
+    .btn-find{width:100%;padding:10px;background:var(--red);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-find:hover{background:var(--red-dk);}
+    .btn-locate{width:100%;padding:8px;background:var(--blue-lt);color:var(--blue);border:1.5px solid #93C5FD;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-locate:hover{background:#BFDBFE;}
+
+    /* DONOR LIST */
+    .donor-list{flex:1;overflow-y:auto;padding:12px;}
+    .donor-item{background:white;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;}
+    .donor-item:hover{border-color:var(--red);box-shadow:0 2px 12px rgba(192,21,42,0.1);}
+    .donor-item.active{border-color:var(--red);background:var(--red-lt);}
+    .di-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .di-av{width:36px;height:36px;border-radius:50%;background:var(--red-lt);color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+    .di-name{font-size:0.88rem;font-weight:700;}
+    .di-city{font-size:0.75rem;color:var(--muted);}
+    .di-bottom{display:flex;align-items:center;justify-content:space-between;}
+    .di-bg{font-size:1.2rem;font-weight:700;color:var(--red);}
+    .di-dist{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
+    .di-pill{padding:3px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;background:var(--green-lt);color:var(--green);}
+    .di-btn{padding:5px 10px;background:var(--red);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;}
+
+    /* MAP */
+    #map{flex:1;}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:40px 20px;color:var(--muted);}
+    .empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:0.3;}
+
+    /* LEGEND */
+    .legend{position:absolute;bottom:32px;left:360px;z-index:1000;background:white;border-radius:10px;padding:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,0.12);border:1px solid var(--border);}
+    .legend h4{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px;}
+    .legend-item{display:flex;align-items:center;gap:8px;font-size:0.8rem;margin-bottom:5px;}
+    .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+
+    /* TOAST */
+    .tw{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999;}
+    .toast{padding:12px 16px;border-radius:8px;font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);animation:si .3s ease;min-width:240px;}
+    .toast.s{background:var(--green-lt);border:1px solid #86EFAC;color:#166534;}
+    .toast.e{background:var(--red-lt);border:1px solid #FFC0C8;color:var(--red-dk);}
+    .toast.i{background:var(--blue-lt);border:1px solid #93C5FD;color:var(--blue);}
+    @keyframes si{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+
+    @media(max-width:768px){
+      .panel{width:100%;height:50vh;}
+      .layout{flex-direction:column;}
+      #map{height:50vh;}
+      .legend{left:10px;bottom:60vh;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <i class="fa-solid fa-droplet"></i>
+    <span>eBloodBank — Donor Map</span>
+  </a>
+  <a href="javascript:history.back()" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2><i class="fa-solid fa-map-location-dot" style="color:var(--red);"></i> Find Blood Donors Near You</h2>
+      <div class="ctrl">
+        <select id="bgSelect">
+          <option value="">— Select Blood Group —</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+        <input type="text" id="cityInput" placeholder="City e.g. Hyderabad"/>
+        <button class="btn-find" onclick="findDonors()">
+          <i class="fa-solid fa-search"></i> Search Donors
+        </button>
+        <button class="btn-locate" onclick="useMyLocation()">
+          <i class="fa-solid fa-location-crosshairs"></i> Use My Location
+        </button>
+      </div>
+    </div>
+
+    <div class="donor-list" id="donorList">
+      <div class="empty">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <p>Select a blood group and click Search to find nearby donors on the map</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <h4>Map Legend</h4>
+    <div class="legend-item"><div class="legend-dot" style="background:#C0152A;"></div> Available Donor</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64748B;"></div> Unavailable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1D4ED8;"></div> Your Location</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#16A34A;"></div> Hospital</div>
+  </div>
+
+</div>
+
+<div class="tw" id="tw"></div>
+
+<script>
+/* ═══════════════ MAP INIT ═══════════════ */
+// Default center: Hyderabad, India
+const map = L.map('map').setView([17.3850, 78.4867], 12);
+
+// OpenStreetMap tiles (free, no API key needed)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19
+}).addTo(map);
+
+/* ═══════════════ CUSTOM ICONS ═══════════════ */
+const donorIcon = L.divIcon({
+  html: `<div style="width:32px;height:32px;background:#C0152A;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+  className: '', iconAnchor: [16, 32], popupAnchor: [0, -32]
+});
+
+const myLocIcon = L.divIcon({
+  html: `<div style="width:20px;height:20px;background:#1D4ED8;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(29,78,216,0.3);animation:pulse 2s infinite;"></div>
+         <style>@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(29,78,216,0.3);}50%{box-shadow:0 0 0 8px rgba(29,78,216,0.1);}}</style>`,
+  className: '', iconAnchor: [10, 10]
+});
+
+const hospitalIcon = L.divIcon({
+  html: `<div style="width:28px;height:28px;background:#16A34A;border-radius:6px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;">🏥</div>`,
+  className: '', iconAnchor: [14, 14]
+});
+
+let markers = [];
+let myMarker = null;
+
+/* ═══════════════ CITY COORDINATES ═══════════════ */
+const cityCoords = {
+  'hyderabad':  [17.3850, 78.4867],
+  'mumbai':     [19.0760, 72.8777],
+  'delhi':      [28.6139, 77.2090],
+  'chennai':    [13.0827, 80.2707],
+  'bangalore':  [12.9716, 77.5946],
+  'bengaluru':  [12.9716, 77.5946],
+  'pune':       [18.5204, 73.8567],
+  'kolkata':    [22.5726, 88.3639],
+  'ahmedabad':  [23.0225, 72.5714],
+  'jaipur':     [26.9124, 75.7873],
+};
+
+/* ═══════════════ DEMO DONORS WITH COORDINATES ═══════════════ */
+const demoDonors = [
+  { id:1, first_name:'Rahul',  last_name:'Sharma',  blood_group:'O+',  city:'Hyderabad', lat:17.3924, lng:78.4900, is_available:1, phone:'9876543210', donation_count:5  },
+  { id:2, first_name:'Priya',  last_name:'Reddy',   blood_group:'A+',  city:'Hyderabad', lat:17.3770, lng:78.4700, is_available:1, phone:'9876543211', donation_count:3  },
+  { id:3, first_name:'Vikram', last_name:'Singh',   blood_group:'B+',  city:'Hyderabad', lat:17.4000, lng:78.5000, is_available:1, phone:'9876543215', donation_count:7  },
+  { id:4, first_name:'Sneha',  last_name:'Patel',   blood_group:'O-',  city:'Hyderabad', lat:17.3650, lng:78.4750, is_available:1, phone:'9876543216', donation_count:2  },
+  { id:5, first_name:'Arjun',  last_name:'Nair',    blood_group:'AB+', city:'Hyderabad', lat:17.4100, lng:78.4600, is_available:0, phone:'9876543217', donation_count:4  },
+  { id:6, first_name:'Kavya',  last_name:'Menon',   blood_group:'A-',  city:'Hyderabad', lat:17.3500, lng:78.5100, is_available:1, phone:'9876543218', donation_count:1  },
+  { id:7, first_name:'Rohit',  last_name:'Kumar',   blood_group:'B-',  city:'Hyderabad', lat:17.4200, lng:78.4800, is_available:1, phone:'9876543219', donation_count:6  },
+  { id:8, first_name:'Ananya', last_name:'Iyer',    blood_group:'O+',  city:'Hyderabad', lat:17.3800, lng:78.5200, is_available:1, phone:'9876543220', donation_count:3  },
+];
+
+const demoHospitals = [
+  { name:'Apollo Hospital',     lat:17.4239, lng:78.4738, city:'Hyderabad' },
+  { name:'KIMS Hospital',       lat:17.3760, lng:78.4780, city:'Hyderabad' },
+  { name:'Care Hospital',       lat:17.4032, lng:78.4490, city:'Hyderabad' },
+  { name:'Yashoda Hospital',    lat:17.4490, lng:78.3730, city:'Hyderabad' },
+];
+
+/* ═══════════════ ADD HOSPITAL MARKERS ═══════════════ */
+demoHospitals.forEach(h => {
+  L.marker([h.lat, h.lng], { icon: hospitalIcon })
+   .addTo(map)
+   .bindPopup(`<b>🏥 ${h.name}</b><br>${h.city}<br><small>Blood Bank Available</small>`);
+});
+
+/* ═══════════════ CLEAR MARKERS ═══════════════ */
+function clearMarkers() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+}
+
+/* ═══════════════ FIND DONORS ═══════════════ */
+async function findDonors() {
+  const bg   = document.getElementById('bgSelect').value;
+  const city = document.getElementById('cityInput').value.trim();
+
+  if (!bg) { toast('Please select a blood group!', 'e'); return; }
+
+  clearMarkers();
+  document.getElementById('donorList').innerHTML =
+    '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Searching donors...</p></div>';
+
+  try {
+    const url = '/api/search?bloodGroup=' + encodeURIComponent(bg) +
+                (city ? '&city=' + encodeURIComponent(city) : '');
+    const r = await fetch(url);
+    const d = await r.json();
+
+    let donors = d.donors || [];
+
+    // Add coordinates to donors (from demo data or geocode city)
+    donors = donors.map(donor => {
+      const demo = demoDonors.find(dd => dd.id === donor.id);
+      if (demo) return { ...donor, lat: demo.lat, lng: demo.lng };
+      // Random offset from city center for demo
+      const coords = cityCoords[city.toLowerCase()] || cityCoords['hyderabad'];
+      return {
+        ...donor,
+        lat: coords[0] + (Math.random() - 0.5) * 0.1,
+        lng: coords[1] + (Math.random() - 0.5) * 0.1
+      };
+    });
+
+    if (!donors.length) {
+      document.getElementById('donorList').innerHTML =
+        '<div class="empty"><i class="fa-solid fa-users-slash"></i><p>No donors found for ' + bg + (city ? ' in ' + city : '') + '</p></div>';
+      return;
+    }
+
+    // Center map on first donor / city
+    const coords = cityCoords[city.toLowerCase()] || [donors[0].lat, donors[0].lng];
+    map.setView(coords, 13);
+
+    // Render donor list and markers
+    renderDonorList(donors, bg);
+    donors.forEach(d => addDonorMarker(d));
+
+    toast('Found ' + donors.length + ' donors on map!', 's');
+  } catch {
+    // Demo mode
+    const filtered = demoDonors.filter(d => !bg || d.blood_group === bg);
+    const coords = cityCoords[city.toLowerCase()] || cityCoords['hyderabad'];
+    map.setView(coords, 13);
+    renderDonorList(filtered, bg);
+    filtered.forEach(d => addDonorMarker(d));
+    toast('Showing ' + filtered.length + ' donors (Demo mode)', 'i');
+  }
+}
+
+/* ═══════════════ ADD DONOR MARKER ═══════════════ */
+function addDonorMarker(donor) {
+  if (!donor.lat || !donor.lng) return;
+
+  const color = donor.is_available ? '#C0152A' : '#64748B';
+  const icon  = L.divIcon({
+    html: `<div style="width:32px;height:32px;background:${color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
+             <span style="transform:rotate(45deg);color:white;font-size:9px;font-weight:700;">${donor.blood_group}</span>
+           </div>`,
+    className: '', iconAnchor: [16, 32], popupAnchor: [0, -32]
+  });
+
+  const m = L.marker([donor.lat, donor.lng], { icon })
+    .addTo(map)
+    .bindPopup(`
+      <div style="font-family:Roboto,sans-serif;min-width:180px;">
+        <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">${donor.first_name} ${donor.last_name}</div>
+        <div style="font-size:0.8rem;color:#666;margin-bottom:8px;">📍 ${donor.city}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:1.4rem;font-weight:700;color:#C0152A;">${donor.blood_group}</span>
+          <span style="padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:600;background:${donor.is_available?'#DCFCE7':'#F1F5F9'};color:${donor.is_available?'#16A34A':'#64748B'};">
+            ${donor.is_available ? '● Available' : '○ Unavailable'}
+          </span>
+        </div>
+        <button onclick="contactDonor('${donor.first_name} ${donor.last_name}','${donor.blood_group}')"
+          style="width:100%;padding:6px;background:#C0152A;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600;">
+          📞 Contact Donor
+        </button>
+      </div>
+    `);
+
+  markers.push(m);
+}
+
+/* ═══════════════ RENDER DONOR LIST ═══════════════ */
+function renderDonorList(donors, bg) {
+  if (!donors.length) {
+    document.getElementById('donorList').innerHTML =
+      '<div class="empty"><i class="fa-solid fa-users-slash"></i><p>No donors found</p></div>';
+    return;
+  }
+
+  document.getElementById('donorList').innerHTML = `
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;padding:0 2px;">
+      Found <strong>${donors.length}</strong> donors for <strong style="color:var(--red);">${bg}</strong>
+    </p>
+    ${donors.map(d => `
+      <div class="donor-item" id="di_${d.id}" onclick="focusDonor(${d.id},${d.lat},${d.lng})">
+        <div class="di-top">
+          <div class="di-av">${d.first_name.charAt(0)}</div>
+          <div>
+            <div class="di-name">${d.first_name} ${d.last_name}</div>
+            <div class="di-city"><i class="fa-solid fa-location-dot"></i> ${d.city}</div>
+          </div>
+        </div>
+        <div class="di-bottom">
+          <div>
+            <div class="di-bg">${d.blood_group}</div>
+            <span class="di-pill" style="${d.is_available?'':'background:var(--bg);color:var(--muted);'}">
+              ${d.is_available ? '● Available' : '○ Unavailable'}
+            </span>
+          </div>
+          <button class="di-btn" onclick="event.stopPropagation();contactDonor('${d.first_name} ${d.last_name}','${d.blood_group}')">
+            Contact
+          </button>
+        </div>
+      </div>`).join('')}`;
+}
+
+/* ═══════════════ FOCUS ON DONOR ═══════════════ */
+function focusDonor(id, lat, lng) {
+  if (!lat || !lng) return;
+  map.setView([lat, lng], 15);
+  document.querySelectorAll('.donor-item').forEach(d => d.classList.remove('active'));
+  const el = document.getElementById('di_' + id);
+  if (el) el.classList.add('active');
+  // Open popup for this marker
+  markers.forEach(m => {
+    const pos = m.getLatLng();
+    if (Math.abs(pos.lat - lat) < 0.001 && Math.abs(pos.lng - lng) < 0.001) {
+      m.openPopup();
+    }
+  });
+}
+
+/* ═══════════════ USE MY LOCATION ═══════════════ */
+function useMyLocation() {
+  if (!navigator.geolocation) {
+    toast('Geolocation not supported in your browser', 'e');
+    return;
+  }
+  toast('Getting your location...', 'i');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      map.setView([lat, lng], 14);
+      if (myMarker) map.removeLayer(myMarker);
+      myMarker = L.marker([lat, lng], { icon: myLocIcon })
+        .addTo(map)
+        .bindPopup('<b>📍 Your Location</b>')
+        .openPopup();
+      markers.push(myMarker);
+      toast('Location found! Now search for donors nearby.', 's');
+    },
+    (err) => {
+      toast('Could not get location: ' + err.message, 'e');
+    }
+  );
+}
+
+/* ═══════════════ CONTACT DONOR ═══════════════ */
+function contactDonor(name, bg) {
+  toast('📩 Request sent to ' + name + ' for ' + bg + ' blood!', 's');
+  map.closePopup();
+}
+
+/* ═══════════════ TOAST ═══════════════ */
+function toast(msg, type = 'i') {
+  const w = document.getElementById('tw');
+  const t = document.createElement('div');
+  const i = { s: 'fa-check-circle', e: 'fa-circle-exclamation', i: 'fa-circle-info' };
+  t.className = 'toast ' + type;
+  t.innerHTML = `<i class="fa-solid ${i[type]}"></i> ${msg}`;
+  w.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// Auto-load Hyderabad donors on start
+window.addEventListener('load', () => {
+  document.getElementById('bgSelect').value = 'O+';
+  document.getElementById('cityInput').value = 'Hyderabad';
+  setTimeout(findDonors, 500);
+});
+</script>
+</body>
+</html>

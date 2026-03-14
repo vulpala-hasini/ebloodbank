@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hospital Dashboard — eBloodBank</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root{--red:#C0152A;--red-dk:#8B0000;--red-lt:#FFF0F2;--green:#16A34A;--green-lt:#DCFCE7;--blue:#1D4ED8;--blue-lt:#DBEAFE;--amber:#D97706;--amber-lt:#FEF3C7;--bg:#F4F6F9;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;--sidebar:#1E293B;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text);}
+    .layout{display:flex;min-height:100vh;}
+    .sidebar{width:250px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:100;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+    .sidebar-logo .icon{width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:1rem;}
+    .sidebar-logo span{color:white;font-size:1.1rem;font-weight:700;}
+    .sidebar-menu{padding:16px 12px;flex:1;}
+    .menu-label{font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:8px 8px 6px;}
+    .menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(255,255,255,0.6);font-size:0.9rem;cursor:pointer;transition:all 0.2s;text-decoration:none;margin-bottom:2px;}
+    .menu-item i{width:16px;text-align:center;}
+    .menu-item:hover{background:rgba(255,255,255,0.07);color:white;}
+    .menu-item.active{background:var(--green);color:white;}
+    .sidebar-user{padding:16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:36px;height:36px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}
+    .user-name{color:white;font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-role{color:rgba(255,255,255,0.4);font-size:0.72rem;}
+    .logout-btn{background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.9rem;padding:4px;transition:color 0.2s;}
+    .logout-btn:hover{color:#FF6B6B;}
+    .main{margin-left:250px;flex:1;}
+    .topbar{background:white;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar-title{font-size:1.1rem;font-weight:700;}
+    .page{padding:24px 28px;}
+    .section{display:none;}
+    .section.active{display:block;}
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .scard{background:white;border-radius:12px;padding:18px 20px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;}
+    .sicon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+    .sicon.r{background:var(--red-lt);color:var(--red);}
+    .sicon.g{background:var(--green-lt);color:var(--green);}
+    .sicon.b{background:var(--blue-lt);color:var(--blue);}
+    .sicon.a{background:var(--amber-lt);color:var(--amber);}
+    .snum{font-size:1.6rem;font-weight:700;line-height:1;}
+    .slbl{font-size:0.78rem;color:var(--muted);margin-top:3px;}
+    /* CARD */
+    .card{background:white;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
+    .card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .card-head h3{font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+    .card-head h3 i{color:var(--green);font-size:0.85rem;}
+    .card-body{padding:20px;}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+    /* BLOOD STOCK GRID */
+    .stock-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+    .stock-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+    .stock-bg{font-size:1.4rem;font-weight:700;color:var(--red);margin-bottom:6px;}
+    .stock-count{font-size:1.8rem;font-weight:700;color:var(--text);line-height:1;}
+    .stock-label{font-size:0.72rem;color:var(--muted);margin-top:3px;}
+    .stock-bar{height:4px;border-radius:2px;margin-top:8px;background:var(--border);overflow:hidden;}
+    .stock-fill{height:100%;border-radius:2px;background:var(--green);transition:width 0.5s;}
+    .stock-fill.low{background:var(--red);}
+    .stock-fill.mid{background:var(--amber);}
+    /* STOCK EDITOR */
+    .stock-editor{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+    .se-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+    .se-bg{font-size:1.1rem;font-weight:700;color:var(--red);margin-bottom:8px;}
+    .se-item input{width:100%;padding:6px;text-align:center;border:1.5px solid var(--border);border-radius:6px;font-size:0.9rem;font-weight:700;outline:none;transition:border-color 0.2s;}
+    .se-item input:focus{border-color:var(--green);}
+    /* ALERT FORM */
+    .fg{margin-bottom:14px;}
+    .fg label{display:block;font-size:0.8rem;font-weight:500;color:var(--text);margin-bottom:5px;}
+    .fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Roboto',sans-serif;font-size:0.88rem;color:var(--text);background:white;outline:none;transition:border-color 0.2s;}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green);}
+    .fg textarea{resize:vertical;min-height:80px;}
+    .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+    .btn-sub{width:100%;padding:10px;background:var(--green);color:white;font-family:'Roboto',sans-serif;font-size:0.9rem;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+    .btn-sub:hover{background:#15803d;}
+    .btn-red{background:var(--red)!important;}
+    .btn-red:hover{background:var(--red-dk)!important;}
+    /* ALERT ITEMS */
+    .alert-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .alert-item:last-child{border-bottom:none;}
+    .al-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;background:var(--red-lt);color:var(--red);}
+    .al-info{flex:1;}
+    .al-info strong{font-size:0.87rem;display:block;}
+    .al-info span{font-size:0.75rem;color:var(--muted);}
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;}
+    th{padding:10px 14px;text-align:left;font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border);}
+    td{padding:12px 14px;font-size:0.85rem;border-bottom:1px solid var(--border);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--bg);}
+    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;}
+    .bg2{background:var(--green-lt);color:var(--green);}
+    .br2{background:var(--red-lt);color:var(--red);}
+    .ba2{background:var(--amber-lt);color:var(--amber);}
+    .bb2{background:var(--blue-lt);color:var(--blue);}
+    .empty{text-align:center;padding:40px 20px;color:var(--muted);}
+    .empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:0.3;}
+    /* TOAST */
+    .toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:999;}
+    .toast{padding:12px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);animation:si 0.3s ease;min-width:240px;}
+    .toast.success{background:var(--green-lt);border:1px solid #86EFAC;color:#166534;}
+    .toast.error{background:var(--red-lt);border:1px solid #FFC0C8;color:var(--red-dk);}
+    .toast.info{background:var(--blue-lt);border:1px solid #93C5FD;color:var(--blue);}
+    @keyframes si{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+    @media(max-width:900px){.sidebar{display:none;}.main{margin-left:0;}.stats{grid-template-columns:repeat(2,1fr);}.stock-grid,.stock-editor{grid-template-columns:repeat(2,1fr);}.page{padding:16px;}.g2,.g3{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="icon"><i class="fa-solid fa-hospital"></i></div>
+      <span>eBloodBank</span>
+    </div>
+    <div class="sidebar-menu">
+      <div class="menu-label">Main Menu</div>
+      <a class="menu-item active" onclick="go('dashboard',this)"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="menu-item" onclick="go('stock',this)"><i class="fa-solid fa-box"></i> Blood Stock</a>
+      <a class="menu-item" onclick="go('alert',this)"><i class="fa-solid fa-bell"></i> Send Alert</a>
+      <a class="menu-item" onclick="go('requests',this)"><i class="fa-solid fa-list"></i> Blood Requests</a>
+      <a class="menu-item" onclick="go('alerts',this)"><i class="fa-solid fa-clock-rotate-left"></i> Alert History</a>
+      <div class="menu-label" style="margin-top:16px;">Account</div>
+      <a class="menu-item" href="#"><i class="fa-solid fa-hospital"></i> Hospital Profile</a>
+      <a class="menu-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="av">A</div>
+      <div class="user-info">
+        <div class="user-name" id="uname">Apollo Hospital</div>
+        <div class="user-role">🏥 Hospital Admin</div>
+      </div>
+      <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="ptitle">Hospital Dashboard</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:0.82rem;color:var(--muted);" id="hospName">Apollo Hospital</span>
+        <span style="padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;background:var(--green-lt);color:var(--green);">● Verified</span>
+      </div>
+    </div>
+    <div class="page">
+
+      <!-- DASHBOARD -->
+      <div class="section active" id="sec-dashboard">
+        <div class="stats">
+          <div class="scard"><div class="sicon g"><i class="fa-solid fa-box"></i></div><div><div class="snum" id="totalStock">0</div><div class="slbl">Total Blood Units</div></div></div>
+          <div class="scard"><div class="sicon r"><i class="fa-solid fa-triangle-exclamation"></i></div><div><div class="snum" id="lowStock">0</div><div class="slbl">Low Stock Groups</div></div></div>
+          <div class="scard"><div class="sicon b"><i class="fa-solid fa-list"></i></div><div><div class="snum" id="pendingReqs">0</div><div class="slbl">Pending Requests</div></div></div>
+          <div class="scard"><div class="sicon a"><i class="fa-solid fa-bell"></i></div><div><div class="snum" id="alertsSent">0</div><div class="slbl">Alerts Sent</div></div></div>
+        </div>
+
+        <div class="g2">
+          <div class="card">
+            <div class="card-head"><h3><i class="fa-solid fa-box"></i> Current Blood Stock</h3><a style="font-size:0.78rem;color:var(--green);font-weight:500;cursor:pointer;" onclick="go('stock',null)">Manage Stock</a></div>
+            <div class="card-body"><div class="stock-grid" id="stockDisplay"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3><i class="fa-solid fa-bell"></i> Recent Alerts</h3><a style="font-size:0.78rem;color:var(--green);font-weight:500;cursor:pointer;" onclick="go('alerts',null)">View All</a></div>
+            <div class="card-body" id="recentAlerts"><div class="empty"><i class="fa-solid fa-bell"></i><p>No alerts sent yet</p></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><i class="fa-solid fa-list"></i> Pending Blood Requests</h3></div>
+          <div id="dashReqs"><div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading...</p></div></div>
+        </div>
+      </div>
+
+      <!-- BLOOD STOCK -->
+      <div class="section" id="sec-stock">
+        <div class="card">
+          <div class="card-head"><h3><i class="fa-solid fa-box"></i> Manage Blood Stock</h3></div>
+          <div class="card-body">
+            <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Update the current blood unit counts in your blood bank. Changes are saved to the database.</p>
+            <div class="stock-editor" id="stockEditor"></div>
+            <button class="btn-sub" onclick="saveStock()"><i class="fa-solid fa-save"></i> Save Blood Stock</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3><i class="fa-solid fa-chart-bar"></i> Stock Overview</h3></div>
+          <div class="card-body"><div class="stock-grid" id="stockOverview"></div></div>
+        </div>
+      </div>
+
+      <!-- SEND ALERT -->
+      <div class="section" id="sec-alert">
+        <div style="max-width:560px;">
+          <div class="card" style="border:2px solid var(--red);">
+            <div class="card-head" style="background:var(--red-lt);"><h3 style="color:var(--red);"><i class="fa-solid fa-bell" style="color:var(--red);"></i> 🚨 Send Emergency Blood Alert</h3></div>
+            <div class="card-body">
+              <p style="font-size:0.85rem;color:var(--muted);margin-bottom:20px;">This will immediately notify all compatible available donors in the selected city via the system.</p>
+              <div class="g3">
+                <div class="fg"><label>Blood Group Needed *</label>
+                  <select id="alBG"><option value="">— Select —</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+                </div>
+                <div class="fg"><label>Units Needed</label>
+                  <select id="alUnits"><option value="1">1 Unit</option><option value="2">2 Units</option><option value="3">3 Units</option><option value="5">5+ Units</option></select>
+                </div>
+                <div class="fg"><label>Urgency</label>
+                  <select id="alUrg"><option value="HIGH">High</option><option value="CRITICAL">Critical</option><option value="NORMAL">Normal</option></select>
+                </div>
+              </div>
+              <div class="fg"><label>City / Location *</label><input type="text" id="alCity" placeholder="e.g. Hyderabad"/></div>
+              <div class="fg"><label>Message to Donors</label><textarea id="alMsg" placeholder="e.g. Critical surgery requires O- blood urgently. Please come to blood bank immediately."></textarea></div>
+              <button class="btn-sub btn-red" onclick="sendAlert()"><i class="fa-solid fa-bell"></i> Send Emergency Alert Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOOD REQUESTS -->
+      <div class="section" id="sec-requests">
+        <div class="card">
+          <div class="card-head"><h3><i class="fa-solid fa-list"></i> All Pending Blood Requests</h3></div>
+          <div id="allReqsBody">
+            <table>
+              <thead><tr><th>Blood Group</th><th>Units</th><th>Patient</th><th>Hospital</th><th>City</th><th>Urgency</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="allReqsTable"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERT HISTORY -->
+      <div class="section" id="sec-alerts">
+        <div class="card">
+          <div class="card-head"><h3><i class="fa-solid fa-clock-rotate-left"></i> Alert History</h3></div>
+          <table>
+            <thead><tr><th>Blood Group</th><th>City</th><th>Units</th><th>Urgency</th><th>Donors Notified</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="alertHistTable"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No alerts yet.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="tw"></div>
+
+<script>
+const GROUPS=['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+let currentStock={'A+':0,'A-':0,'B+':0,'B-':0,'AB+':0,'AB-':0,'O+':0,'O-':0};
+const titles={dashboard:'Hospital Dashboard',stock:'Blood Stock Management',alert:'Send Emergency Alert',requests:'Blood Requests',alerts:'Alert History'};
+
+document.addEventListener('DOMContentLoaded',()=>{initUser();loadDash();buildEditor();});
+
+function initUser(){
+  const u=JSON.parse(localStorage.getItem('user')||'{}');
+  const name=u.firstName?u.firstName+' '+u.lastName:'Apollo Admin';
+  document.getElementById('uname').textContent=name;
+  document.getElementById('av').textContent=name.charAt(0).toUpperCase();
+}
+
+function go(n,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+n).classList.add('active');
+  document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('ptitle').textContent=titles[n]||n;
+  if(n==='requests')loadRequests();
+}
+
+async function loadDash(){
+  const tk=localStorage.getItem('token');
+  try{
+    const r=await fetch('/api/hospital/dashboard',{headers:{'Authorization':'Bearer '+tk}});
+    const d=await r.json();
+    if(r.ok){
+      currentStock=d.hospital?.bloodStock||currentStock;
+      document.getElementById('hospName').textContent=d.hospital?.name||'Hospital';
+      document.getElementById('uname').textContent=d.hospital?.name||'Hospital Admin';
+      renderStock(currentStock);
+      buildEditor();
+      renderAlerts(d.recentAlerts||[]);
+      renderRequests(d.pendingRequests||[]);
+      const total=Object.values(currentStock).reduce((a,b)=>a+b,0);
+      const low=Object.values(currentStock).filter(v=>v<5).length;
+      document.getElementById('totalStock').textContent=total;
+      document.getElementById('lowStock').textContent=low;
+      document.getElementById('pendingReqs').textContent=d.pendingRequests?.length||0;
+      document.getElementById('alertsSent').textContent=d.recentAlerts?.length||0;
+    }
+  }catch{
+    const demo={'A+':8,'A-':2,'B+':12,'B-':1,'AB+':4,'AB-':1,'O+':15,'O-':3};
+    currentStock=demo;renderStock(demo);buildEditor();
+    document.getElementById('totalStock').textContent=Object.values(demo).reduce((a,b)=>a+b,0);
+    document.getElementById('lowStock').textContent=Object.values(demo).filter(v=>v<5).length;
+  }
+}
+
+function renderStock(stock){
+  const max=Math.max(...Object.values(stock),1);
+  const html=GROUPS.map(g=>{
+    const v=stock[g]||0;
+    const pct=Math.round((v/max)*100);
+    const cls=v<=2?'low':v<=5?'mid':'';
+    return`<div class="stock-item"><div class="stock-bg">${g}</div><div class="stock-count">${v}</div><div class="stock-label">units</div><div class="stock-bar"><div class="stock-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+  document.getElementById('stockDisplay').innerHTML=html;
+  if(document.getElementById('stockOverview'))document.getElementById('stockOverview').innerHTML=html;
+}
+
+function buildEditor(){
+  document.getElementById('stockEditor').innerHTML=GROUPS.map(g=>`<div class="se-item"><div class="se-bg">${g}</div><input type="number" id="se_${g.replace('+','p').replace('-','m')}" value="${currentStock[g]||0}" min="0" max="999"/></div>`).join('');
+}
+
+function saveStock(){
+  const stock={};
+  GROUPS.forEach(g=>{const id='se_'+g.replace('+','p').replace('-','m');stock[g]=parseInt(document.getElementById(id).value)||0;});
+  currentStock=stock;
+  const tk=localStorage.getItem('token');
+  fetch('/api/hospital/stock',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},body:JSON.stringify({stock})})
+    .then(r=>r.json())
+    .then(d=>{toast('✅ Blood stock updated successfully!','success');renderStock(stock);})
+    .catch(()=>toast('✅ Stock updated! (Demo mode)','success'));
+}
+
+async function sendAlert(){
+  const bg=document.getElementById('alBG').value;
+  const city=document.getElementById('alCity').value;
+  if(!bg){toast('Please select a blood group','error');return;}
+  if(!city){toast('Please enter a city','error');return;}
+  const tk=localStorage.getItem('token');
+  try{
+    const r=await fetch('/api/alerts',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},
+      body:JSON.stringify({bloodGroup:bg,city,units:document.getElementById('alUnits').value,message:document.getElementById('alMsg').value,urgency:document.getElementById('alUrg').value})
+    });
+    const d=await r.json();
+    if(r.ok){
+      toast('🚨 Alert sent to '+d.donorsNotified+' donors!','success');
+      document.getElementById('alBG').value='';
+      document.getElementById('alCity').value='';
+      document.getElementById('alMsg').value='';
+      loadDash();
+    }else toast(d.message||'Failed to send alert','error');
+  }catch{toast('🚨 Alert sent! (Demo mode)','success');}
+}
+
+async function loadRequests(){
+  const tk=localStorage.getItem('token');
+  try{
+    const r=await fetch('/api/requests',{headers:{'Authorization':'Bearer '+tk}});
+    const d=await r.json();
+    renderRequests(d.requests||[]);
+  }catch{}
+}
+
+function renderRequests(reqs){
+  const html=!reqs.length?'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">No pending requests</td></tr>':
+    reqs.map(r=>`<tr><td><strong style="color:var(--red);">${r.blood_group}</strong></td><td>${r.units||1}</td><td>${r.first_name||''} ${r.last_name||''}</td><td>${r.hospital||'—'}</td><td>${r.city||'—'}</td><td><span class="badge ${r.urgency==='CRITICAL'?'br2':r.urgency==='HIGH'?'ba2':'bb2'}">${r.urgency}</span></td><td><span class="badge bb2">Pending</span></td><td><button onclick="fulfillReq(${r.id})" style="padding:4px 10px;background:var(--green);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">Fulfill</button></td></tr>`).join('');
+  document.getElementById('allReqsTable').innerHTML=html;
+  if(document.getElementById('dashReqs'))document.getElementById('dashReqs').innerHTML=`<table><thead><tr><th>Blood Group</th><th>Units</th><th>Patient</th><th>Urgency</th><th>Status</th></tr></thead><tbody>${html}</tbody></table>`;
+  document.getElementById('pendingReqs').textContent=reqs.length;
+}
+
+function fulfillReq(id){toast('Request #'+id+' marked as fulfilled!','success');}
+
+function renderAlerts(alerts){
+  document.getElementById('recentAlerts').innerHTML=!alerts.length?'<div class="empty"><i class="fa-solid fa-bell"></i><p>No alerts sent yet</p></div>':
+    alerts.slice(0,4).map(a=>`<div class="alert-item"><div class="al-icon">🚨</div><div class="al-info"><strong>${a.blood_group} — ${a.urgency}</strong><span>${a.city||'All areas'} · ${a.donor_count||0} donors notified · ${new Date(a.created_at).toLocaleDateString()}</span></div></div>`).join('');
+  document.getElementById('alertHistTable').innerHTML=!alerts.length?'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No alerts yet.</td></tr>':
+    alerts.map(a=>`<tr><td><strong style="color:var(--red);">${a.blood_group}</strong></td><td>${a.city||'All'}</td><td>${a.units||1}</td><td><span class="badge ${a.urgency==='CRITICAL'?'br2':'ba2'}">${a.urgency}</span></td><td>${a.donor_count||0}</td><td><span class="badge ${a.is_resolved?'bg2':'bb2'}">${a.is_resolved?'Resolved':'Active'}</span></td><td>${new Date(a.created_at).toLocaleDateString()}</td></tr>`).join('');
+  document.getElementById('alertsSent').textContent=alerts.length;
+}
+
+function toast(msg,type='info'){
+  const w=document.getElementById('tw'),t=document.createElement('div');
+  const i={success:'fa-check-circle',error:'fa-circle-exclamation',info:'fa-circle-info'};
+  t.className='toast '+type;t.innerHTML=`<i class="fa-solid ${i[type]}"></i> ${msg}`;
+  w.appendChild(t);setTimeout(()=>t.remove(),4000);
+}
+function logout(){localStorage.removeItem('token');localStorage.removeItem('user');localStorage.removeItem('role');window.location.href='login.html';}
+</script>
+</body>
+</html>

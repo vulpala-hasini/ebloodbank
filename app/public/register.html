@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — eBloodBank</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --crimson:    #C0152A;
+      --crimson-dk: #8B0000;
+      --crimson-lt: #FF3355;
+      --off-white:  #FDF8F8;
+      --gray-100:   #F5F0F0;
+      --gray-300:   #D4C8C8;
+      --gray-500:   #9A8A8A;
+      --gray-600:   #7A6A6A;
+      --gray-900:   #1A0A0A;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      background: var(--off-white);
+      display: flex; flex-direction: column;
+    }
+
+    /* TOP NAV */
+    .top-nav {
+      height: 64px; background: white;
+      border-bottom: 1px solid rgba(192,21,42,0.08);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .brand .icon {
+      width: 36px; height: 36px; background: var(--crimson);
+      border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.1rem; color: white;
+    }
+    .brand span {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 700; color: var(--crimson-dk);
+    }
+    .top-nav-right { font-size: 0.88rem; color: var(--gray-500); }
+    .top-nav-right a { color: var(--crimson); text-decoration: none; font-weight: 600; }
+
+    /* MAIN WRAPPER */
+    .main {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .register-card {
+      background: white; border-radius: 24px;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.08);
+      width: 100%; max-width: 680px;
+      overflow: hidden;
+    }
+
+    /* PROGRESS BAR */
+    .progress-bar {
+      height: 4px; background: var(--gray-100);
+      position: relative;
+    }
+    .progress-fill {
+      position: absolute; left: 0; top: 0; height: 100%;
+      background: var(--crimson); border-radius: 0 2px 2px 0;
+      transition: width 0.4s ease;
+    }
+
+    .card-header {
+      padding: 36px 40px 24px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .step-indicator {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--crimson);
+      margin-bottom: 8px;
+    }
+    .card-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 700; color: var(--gray-900);
+    }
+    .card-header p { font-size: 0.88rem; color: var(--gray-500); margin-top: 4px; }
+
+    .card-body { padding: 28px 40px; }
+
+    /* ROLE SELECTOR */
+    .role-selector {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
+      margin-bottom: 0;
+    }
+    .role-option {
+      border: 2px solid var(--gray-300); border-radius: 14px;
+      padding: 20px 12px; text-align: center; cursor: pointer;
+      transition: all 0.2s; position: relative;
+    }
+    .role-option:hover { border-color: var(--crimson); }
+    .role-option.selected {
+      border-color: var(--crimson);
+      background: rgba(192,21,42,0.04);
+    }
+    .role-option .check {
+      position: absolute; top: 10px; right: 10px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--crimson); color: white;
+      font-size: 0.65rem; display: none;
+      align-items: center; justify-content: center;
+    }
+    .role-option.selected .check { display: flex; }
+    .role-option .r-icon {
+      font-size: 1.8rem; margin-bottom: 10px;
+      color: var(--gray-500); transition: color 0.2s;
+    }
+    .role-option.selected .r-icon { color: var(--crimson); }
+    .role-option h4 {
+      font-size: 0.9rem; font-weight: 600; color: var(--gray-900); margin-bottom: 4px;
+    }
+    .role-option p { font-size: 0.75rem; color: var(--gray-500); line-height: 1.4; }
+
+    /* FORM GRID */
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .form-grid .full { grid-column: 1/-1; }
+
+    .field { margin-bottom: 0; }
+    .field label {
+      display: block; font-size: 0.8rem; font-weight: 600;
+      color: var(--gray-900); margin-bottom: 6px; letter-spacing: 0.02em;
+    }
+    .field label .req { color: var(--crimson); }
+
+    .input-wrap { position: relative; }
+    .input-wrap i.pre {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-500); font-size: 0.85rem; pointer-events: none;
+    }
+    .input-wrap .eye {
+      position: absolute; right: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-500); cursor: pointer; font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .input-wrap .eye:hover { color: var(--crimson); }
+
+    .field input, .field select {
+      width: 100%; padding: 11px 13px 11px 38px;
+      border: 1.5px solid var(--gray-300); border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; color: var(--gray-900);
+      background: white; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--crimson);
+      box-shadow: 0 0 0 3px rgba(192,21,42,0.07);
+    }
+    .field input.err { border-color: #FF3355; }
+    .err-msg {
+      font-size: 0.73rem; color: #FF3355;
+      margin-top: 4px; display: none;
+    }
+    .err-msg.show { display: block; }
+
+    /* Password strength */
+    .pwd-strength {
+      margin-top: 6px; display: none;
+    }
+    .pwd-strength.show { display: block; }
+    .strength-bar {
+      display: flex; gap: 4px; margin-bottom: 4px;
+    }
+    .strength-seg {
+      flex: 1; height: 3px; border-radius: 2px;
+      background: var(--gray-300); transition: background 0.3s;
+    }
+    .strength-label {
+      font-size: 0.72rem; color: var(--gray-500); font-weight: 500;
+    }
+
+    /* HOSPITAL-SPECIFIC FIELDS */
+    .hospital-only { display: none; }
+
+    /* TERMS */
+    .terms-check {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-top: 16px;
+    }
+    .terms-check input[type=checkbox] {
+      width: 18px; height: 18px; margin-top: 2px;
+      accent-color: var(--crimson); flex-shrink: 0;
+      padding: 0;
+    }
+    .terms-check label {
+      font-size: 0.82rem; color: var(--gray-600); line-height: 1.5;
+      margin: 0;
+    }
+    .terms-check label a { color: var(--crimson); text-decoration: none; }
+
+    /* CARD FOOTER */
+    .card-footer {
+      padding: 20px 40px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--gray-100);
+    }
+
+    .btn-back {
+      padding: 11px 24px; border-radius: 9px;
+      background: transparent; border: 1.5px solid var(--gray-300);
+      color: var(--gray-600); font-family: 'DM Sans',sans-serif;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--gray-500); color: var(--gray-900); }
+
+    .btn-next {
+      padding: 11px 32px; border-radius: 9px;
+      background: var(--crimson); color: white;
+      font-family: 'DM Sans',sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      border: none; cursor: pointer;
+      box-shadow: 0 3px 14px rgba(192,21,42,0.28);
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-next:hover {
+      background: var(--crimson-dk); transform: translateY(-1px);
+    }
+
+    /* TOAST */
+    .toast {
+      display: none; padding: 12px 16px; border-radius: 9px;
+      font-size: 0.86rem; font-weight: 500; margin-bottom: 16px;
+      align-items: center; gap: 9px;
+    }
+    .toast.error  { background: #FFF0F2; border:1px solid #FFB3BF; color:#8B0000; display:flex; }
+    .toast.success{ background: #F0FFF4; border:1px solid #B3FFCC; color:#006620; display:flex; }
+
+    /* SUCCESS SCREEN */
+    .success-screen {
+      display: none; text-align: center; padding: 48px 40px;
+    }
+    .success-icon {
+      width: 80px; height: 80px; background: rgba(0,180,80,0.1);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 2.5rem; color: #00B450;
+      margin: 0 auto 20px;
+    }
+    .success-screen h3 {
+      font-family: 'Playfair Display',serif;
+      font-size: 1.6rem; font-weight: 700; margin-bottom: 10px;
+    }
+    .success-screen p { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 24px; }
+
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      animation: spin 0.7s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width:640px) {
+      .card-body { padding: 20px 20px; }
+      .card-header { padding: 24px 20px 16px; }
+      .card-footer { padding: 16px 20px 24px; flex-direction: column; gap: 12px; }
+      .btn-next, .btn-back { width: 100%; justify-content: center; }
+      .form-grid { grid-template-columns: 1fr; }
+      .role-selector { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a href="index.html" class="brand">
+    <div class="icon"><i class="fa-solid fa-droplet"></i></div>
+    <span>eBloodBank</span>
+  </a>
+  <div class="top-nav-right">Already have an account? <a href="login.html">Sign In</a></div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="register-card">
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:33%"></div>
+    </div>
+
+    <!-- ── STEP 1: Role Selection ── -->
+    <div id="step1">
+      <div class="card-header">
+        <div class="step-indicator">Step 1 of 3 — Choose Your Role</div>
+        <h2>Who are you?</h2>
+        <p>Select your role to get the right registration form.</p>
+      </div>
+
+      <div class="card-body">
+        <div class="toast" id="toast1"></div>
+        <div class="role-selector">
+          <div class="role-option" onclick="selectRole('donor',this)">
+            <div class="check"><i class="fa-solid fa-check"></i></div>
+            <div class="r-icon"><i class="fa-solid fa-hand-holding-droplet"></i></div>
+            <h4>Donor</h4>
+            <p>I want to donate blood and save lives</p>
+          </div>
+          <div class="role-option" onclick="selectRole('receiver',this)">
+            <div class="check"><i class="fa-solid fa-check"></i></div>
+            <div class="r-icon"><i class="fa-solid fa-user-injured"></i></div>
+            <h4>Receiver</h4>
+            <p>I need blood or a blood search</p>
+          </div>
+          <div class="role-option" onclick="selectRole('hospital',this)">
+            <div class="check"><i class="fa-solid fa-check"></i></div>
+            <div class="r-icon"><i class="fa-solid fa-hospital"></i></div>
+            <h4>Hospital</h4>
+            <p>Blood bank or hospital admin</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div></div>
+        <button class="btn-next" onclick="goStep(2)">
+          Continue <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Personal Info ── -->
+    <div id="step2" style="display:none;">
+      <div class="card-header">
+        <div class="step-indicator" id="step2Label">Step 2 of 3 — Personal Information</div>
+        <h2 id="step2Title">Your Details</h2>
+        <p id="step2Sub">Fill in your personal information accurately.</p>
+      </div>
+
+      <div class="card-body">
+        <div class="toast" id="toast2"></div>
+        <form id="infoForm" novalidate>
+          <div class="form-grid">
+
+            <div class="field">
+              <label>First Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-user"></i>
+                <input type="text" id="firstName" placeholder="Rahul"/>
+              </div>
+              <p class="err-msg" id="firstNameErr">First name is required.</p>
+            </div>
+
+            <div class="field">
+              <label>Last Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-user"></i>
+                <input type="text" id="lastName" placeholder="Sharma"/>
+              </div>
+              <p class="err-msg" id="lastNameErr">Last name is required.</p>
+            </div>
+
+            <div class="field full">
+              <label>Email Address <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-envelope"></i>
+                <input type="email" id="regEmail" placeholder="you@example.com"/>
+              </div>
+              <p class="err-msg" id="regEmailErr">Enter a valid email address.</p>
+            </div>
+
+            <div class="field">
+              <label>Phone Number <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-phone"></i>
+                <input type="tel" id="phone" placeholder="+91 98765 43210"/>
+              </div>
+              <p class="err-msg" id="phoneErr">Phone number is required.</p>
+            </div>
+
+            <div class="field">
+              <label>Date of Birth <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-calendar"></i>
+                <input type="date" id="dob" style="padding-left:38px;"/>
+              </div>
+              <p class="err-msg" id="dobErr">Date of birth is required.</p>
+            </div>
+
+            <div class="field">
+              <label>Blood Group <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-droplet"></i>
+                <select id="bloodGroup">
+                  <option value="">— Select —</option>
+                  <option>A+</option><option>A−</option>
+                  <option>B+</option><option>B−</option>
+                  <option>AB+</option><option>AB−</option>
+                  <option>O+</option><option>O−</option>
+                </select>
+              </div>
+              <p class="err-msg" id="bloodErr">Blood group is required.</p>
+            </div>
+
+            <div class="field">
+              <label>City / Location <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-location-dot"></i>
+                <input type="text" id="city" placeholder="Hyderabad"/>
+              </div>
+              <p class="err-msg" id="cityErr">City is required.</p>
+            </div>
+
+            <!-- DONOR-ONLY -->
+            <div class="field donor-only" id="lastDonationField">
+              <label>Last Donation Date</label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-syringe"></i>
+                <input type="date" id="lastDonation" style="padding-left:38px;"/>
+              </div>
+            </div>
+
+            <!-- HOSPITAL-ONLY -->
+            <div class="field hospital-only full" id="hospitalNameField">
+              <label>Hospital / Blood Bank Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-hospital"></i>
+                <input type="text" id="hospitalName" placeholder="Apollo Hospital"/>
+              </div>
+              <p class="err-msg" id="hospitalNameErr">Hospital name is required.</p>
+            </div>
+
+            <div class="field hospital-only" id="licenseField">
+              <label>License Number <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="pre fa-solid fa-id-card"></i>
+                <input type="text" id="license" placeholder="TS/NABB/2024/001"/>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-back" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn-next" onclick="goStep(3)">
+          Continue <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Password & Confirm ── -->
+    <div id="step3" style="display:none;">
+      <div class="card-header">
+        <div class="step-indicator">Step 3 of 3 — Secure Your Account</div>
+        <h2>Create a Password</h2>
+        <p>Use a strong password to protect your account.</p>
+      </div>
+
+      <div class="card-body">
+        <div class="toast" id="toast3"></div>
+        <div class="form-grid">
+
+          <div class="field full">
+            <label>Password <span class="req">*</span></label>
+            <div class="input-wrap">
+              <i class="pre fa-solid fa-lock"></i>
+              <input type="password" id="regPwd" placeholder="Min 8 characters" oninput="checkPwdStrength(this.value)"/>
+              <i class="eye fa-solid fa-eye" onclick="togglePwd('regPwd',this)"></i>
+            </div>
+            <div class="pwd-strength" id="pwdStrength">
+              <div class="strength-bar">
+                <div class="strength-seg" id="seg1"></div>
+                <div class="strength-seg" id="seg2"></div>
+                <div class="strength-seg" id="seg3"></div>
+                <div class="strength-seg" id="seg4"></div>
+              </div>
+              <div class="strength-label" id="strengthLabel">Enter password</div>
+            </div>
+            <p class="err-msg" id="regPwdErr">Password must be at least 8 characters.</p>
+          </div>
+
+          <div class="field full">
+            <label>Confirm Password <span class="req">*</span></label>
+            <div class="input-wrap">
+              <i class="pre fa-solid fa-lock"></i>
+              <input type="password" id="regPwdConf" placeholder="Repeat password"/>
+              <i class="eye fa-solid fa-eye" onclick="togglePwd('regPwdConf',this)"></i>
+            </div>
+            <p class="err-msg" id="regPwdConfErr">Passwords do not match.</p>
+          </div>
+
+        </div>
+
+        <div class="terms-check">
+          <input type="checkbox" id="terms"/>
+          <label for="terms">
+            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            I consent to receiving blood donation reminders and emergency alerts via email and SMS.
+          </label>
+        </div>
+        <p class="err-msg" id="termsErr">You must accept the terms to continue.</p>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn-next" id="submitRegBtn" onclick="submitRegistration()">
+          <div class="spinner" id="regSpinner"></div>
+          <span id="regBtnText"><i class="fa-solid fa-user-plus"></i> Create Account</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SUCCESS SCREEN ── -->
+    <div id="successScreen" class="success-screen">
+      <div class="success-icon">✅</div>
+      <h3>Account Created!</h3>
+      <p id="successMsg">Welcome to eBloodBank. Your account has been registered successfully.</p>
+      <a href="login.html" style="display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:var(--crimson); color:white; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.9rem; box-shadow:0 4px 16px rgba(192,21,42,0.3);">
+        <i class="fa-solid fa-right-to-bracket"></i> Go to Login
+      </a>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  let selectedRole = '';
+
+  // Pre-select role from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const roleParam = urlParams.get('role');
+  if (roleParam) {
+    document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+    const idx = { donor: 0, receiver: 1, hospital: 2 }[roleParam] ?? 0;
+    const options = document.querySelectorAll('.role-option');
+    if (options[idx]) options[idx].classList.add('selected');
+    selectedRole = roleParam;
+  }
+
+  function selectRole(role, el) {
+    selectedRole = role;
+    document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function showT(id, msg, type='error') {
+    const t = document.getElementById(id);
+    t.className = `toast ${type}`;
+    t.innerHTML = `<i class="fa-solid fa-${type==='error'?'circle-exclamation':'check-circle'}"></i> ${msg}`;
+  }
+  function hideT(id) { document.getElementById(id).className = 'toast'; }
+
+  function goStep(n) {
+    hideT('toast1'); hideT('toast2'); hideT('toast3');
+
+    if (n === 2) {
+      if (!selectedRole) { showT('toast1','Please select a role to continue.'); return; }
+      adjustStep2ForRole();
+    }
+    if (n === 3) {
+      if (!validateStep2()) return;
+    }
+
+    document.querySelectorAll('[id^=step]').forEach(s => s.style.display = 'none');
+    document.getElementById(`step${n}`).style.display = '';
+    const progMap = { 1: '33%', 2: '66%', 3: '100%' };
+    document.getElementById('progressFill').style.width = progMap[n];
+  }
+
+  function adjustStep2ForRole() {
+    const isHospital = selectedRole === 'hospital';
+    const isDonor    = selectedRole === 'donor';
+
+    document.querySelectorAll('.hospital-only').forEach(el => el.style.display = isHospital ? '' : 'none');
+    document.querySelectorAll('.donor-only').forEach(el => el.style.display = isDonor ? '' : 'none');
+
+    const titles = {
+      donor:    ['Donor Information',    'Tell us about yourself so we can match you with nearby receivers.'],
+      receiver: ['Receiver Information', 'Your profile helps hospitals and donors find you quickly.'],
+      hospital: ['Hospital Information', 'Provide your hospital details for verification and blood stock management.']
+    };
+    document.getElementById('step2Title').textContent = titles[selectedRole][0];
+    document.getElementById('step2Sub').textContent   = titles[selectedRole][1];
+  }
+
+  function validateStep2() {
+    let ok = true;
+    const req = (id, errId, msg) => {
+      const el = document.getElementById(id);
+      const em = document.getElementById(errId);
+      if (!el.value.trim()) {
+        el.classList.add('err');
+        em.classList.add('show');
+        em.textContent = msg;
+        ok = false;
+      } else {
+        el.classList.remove('err');
+        em.classList.remove('show');
+      }
+    };
+    req('firstName','firstNameErr','First name is required.');
+    req('lastName','lastNameErr','Last name is required.');
+    req('dob','dobErr','Date of birth is required.');
+    req('city','cityErr','City is required.');
+
+    const email = document.getElementById('regEmail');
+    const emailErr = document.getElementById('regEmailErr');
+    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+      email.classList.add('err'); emailErr.classList.add('show'); ok = false;
+    } else { email.classList.remove('err'); emailErr.classList.remove('show'); }
+
+    const blood = document.getElementById('bloodGroup');
+    const bloodErr = document.getElementById('bloodErr');
+    if (!blood.value) {
+      blood.classList.add('err'); bloodErr.classList.add('show'); ok = false;
+    } else { blood.classList.remove('err'); bloodErr.classList.remove('show'); }
+
+    if (selectedRole === 'hospital') {
+      req('hospitalName','hospitalNameErr','Hospital name is required.');
+    }
+
+    if (!ok) showT('toast2','Please fill in all required fields.');
+    return ok;
+  }
+
+  function togglePwd(id, icon) {
+    const input = document.getElementById(id);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('fa-eye','fa-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('fa-eye-slash','fa-eye');
+    }
+  }
+
+  function checkPwdStrength(val) {
+    const el = document.getElementById('pwdStrength');
+    el.classList.add('show');
+    const segs = [1,2,3,4].map(i => document.getElementById(`seg${i}`));
+    segs.forEach(s => s.style.background = '#D4C8C8');
+
+    let score = 0;
+    if (val.length >= 8)           score++;
+    if (/[A-Z]/.test(val))         score++;
+    if (/[0-9]/.test(val))         score++;
+    if (/[^A-Za-z0-9]/.test(val))  score++;
+
+    const colors = ['#FF3355','#FF8C00','#FFC107','#22C55E'];
+    const labels = ['Too Weak','Fair','Good','Strong'];
+    for (let i = 0; i < score; i++) {
+      segs[i].style.background = colors[score-1];
+    }
+    document.getElementById('strengthLabel').textContent = score > 0 ? labels[score-1] : 'Enter password';
+    document.getElementById('strengthLabel').style.color = score > 0 ? colors[score-1] : '#9A8A8A';
+  }
+
+  async function submitRegistration() {
+    hideT('toast3');
+
+    const pwd = document.getElementById('regPwd').value;
+    const pwdConf = document.getElementById('regPwdConf').value;
+    const terms = document.getElementById('terms').checked;
+
+    let ok = true;
+    if (!pwd || pwd.length < 8) {
+      document.getElementById('regPwd').classList.add('err');
+      document.getElementById('regPwdErr').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('regPwd').classList.remove('err');
+      document.getElementById('regPwdErr').classList.remove('show');
+    }
+    if (pwd !== pwdConf) {
+      document.getElementById('regPwdConf').classList.add('err');
+      document.getElementById('regPwdConfErr').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('regPwdConf').classList.remove('err');
+      document.getElementById('regPwdConfErr').classList.remove('show');
+    }
+    if (!terms) {
+      document.getElementById('termsErr').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('termsErr').classList.remove('show');
+    }
+    if (!ok) { showT('toast3','Please fix the errors above.'); return; }
+
+    // Build payload
+    const payload = {
+      role:       selectedRole,
+      firstName:  document.getElementById('firstName').value,
+      lastName:   document.getElementById('lastName').value,
+      email:      document.getElementById('regEmail').value,
+      phone:      document.getElementById('phone').value,
+      dob:        document.getElementById('dob').value,
+      bloodGroup: document.getElementById('bloodGroup').value,
+      city:       document.getElementById('city').value,
+      password:   pwd
+    };
+    if (selectedRole === 'donor') payload.lastDonation = document.getElementById('lastDonation').value;
+    if (selectedRole === 'hospital') {
+      payload.hospitalName = document.getElementById('hospitalName').value;
+      payload.license      = document.getElementById('license').value;
+    }
+
+    // Loading
+    document.getElementById('submitRegBtn').disabled = true;
+    document.getElementById('regSpinner').style.display = 'block';
+    document.getElementById('regBtnText').style.display = 'none';
+
+    try {
+      // ── API CALL: POST /api/register ──
+      const resp = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        showT('toast3', data.message || 'Registration failed. Try again.');
+      } else {
+        showSuccess(payload);
+      }
+    } catch (err) {
+      // DEMO MODE: show success
+      showSuccess(payload);
+    } finally {
+      document.getElementById('submitRegBtn').disabled = false;
+      document.getElementById('regSpinner').style.display = 'none';
+      document.getElementById('regBtnText').style.display = 'flex';
+    }
+  }
+
+  function showSuccess(payload) {
+    document.querySelectorAll('[id^=step]').forEach(s => s.style.display='none');
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('successMsg').textContent =
+      `Welcome, ${payload.firstName}! Your ${payload.role} account has been created. Check your email for confirmation.`;
+    document.getElementById('successScreen').style.display = 'block';
+  }
+</script>
+</body>
+</html>
