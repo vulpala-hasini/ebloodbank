@@ -28,14 +28,8 @@ let db = null;
 async function connectDB() {
   try {
     db = new Pool({
-      host:     process.env.DB_HOST || 'localhost',
-      user:     process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASS || '',
-      database: process.env.DB_NAME || 'postgres',
-      port:     parseInt(process.env.DB_PORT) || 5432,
-      ssl:      process.env.DB_HOST && process.env.DB_HOST.includes('supabase')
-                ? { rejectUnauthorized: false }
-                : false
+      connectionString: process.env.DATABASE_URL || `postgresql://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+      ssl: { rejectUnauthorized: false }
     });
     const client = await db.connect();
     console.log('✅ PostgreSQL (Supabase) connected!');
