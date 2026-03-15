@@ -36,7 +36,8 @@ async function connectDB() {
     client.release();
   } catch (err) {
     console.log('⚠️  Database not connected — DEMO MODE');
-    console.log('   Error:', err.message);
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('DB_HOST:', process.env.DB_HOST ? 'SET' : 'NOT SET');
     db = null;
   }
 }
