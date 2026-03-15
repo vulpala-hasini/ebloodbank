@@ -25,19 +25,34 @@ app.use(express.static(path.join(__dirname, 'public')));
    POSTGRESQL CONNECTION (Supabase)
 ══════════════════════════════════════ */
 let db = null;
+
+// Create pool - works for both local and Vercel serverless
+function createPool() {
+  const connStr = process.env.DATABASE_URL;
+  const host    = process.env.DB_HOST;
+  if (!connStr && !host) return null;
+  return new Pool({
+    connectionString: connStr || 
+      `postgresql://${process.env.DB_USER}:${encodeURIComponent(process.env.DB_PASS||'')}@${host}:${process.env.DB_PORT||5432}/${process.env.DB_NAME||'postgres'}`,
+    ssl: { rejectUnauthorized: false },
+    max: 3,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
+}
+
 async function connectDB() {
   try {
-    db = new Pool({
-      connectionString: process.env.DATABASE_URL || `postgresql://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
-      ssl: { rejectUnauthorized: false }
-    });
+    db = createPool();
+    if (!db) {
+      console.log('⚠️  No DB config — DEMO MODE');
+      return;
+    }
     const client = await db.connect();
-    console.log('✅ PostgreSQL (Supabase) connected!');
+    console.log('✅ PostgreSQL connected!');
     client.release();
   } catch (err) {
-    console.log('⚠️  Database not connected — DEMO MODE');
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-console.log('DB_HOST:', process.env.DB_HOST ? 'SET' : 'NOT SET');
+    console.log('⚠️  DB error — DEMO MODE:', err.message);
     db = null;
   }
 }
