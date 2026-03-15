@@ -24,40 +24,36 @@ app.use(express.static(path.join(__dirname, 'public')));
 /* ══════════════════════════════════════
    POSTGRESQL CONNECTION (Supabase)
 ══════════════════════════════════════ */
+ 
+/* ══════════════════════════════════════
+   POSTGRESQL CONNECTION
+══════════════════════════════════════ */
 let db = null;
 
-// Create pool - works for both local and Vercel serverless
-function createPool() {
-  const connStr = process.env.DATABASE_URL;
-  const host    = process.env.DB_HOST;
-  if (!connStr && !host) return null;
-  return new Pool({
-    connectionString: connStr || 
-      `postgresql://${process.env.DB_USER}:${encodeURIComponent(process.env.DB_PASS||'')}@${host}:${process.env.DB_PORT||5432}/${process.env.DB_NAME||'postgres'}`,
-    ssl: { rejectUnauthorized: false },
-    max: 3,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
-  });
-}
-
-async function connectDB() {
+async function getDB() {
+  if (db) return db;
   try {
-    db = createPool();
-    if (!db) {
-      console.log('⚠️  No DB config — DEMO MODE');
-      return;
-    }
-    const client = await db.connect();
-    console.log('✅ PostgreSQL connected!');
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+      connectionTimeoutMillis: 15000,
+      idleTimeoutMillis: 15000,
+    });
+    const client = await pool.connect();
     client.release();
+    console.log('✅ PostgreSQL connected!');
+    db = pool;
+    return db;
   } catch (err) {
-    console.log('⚠️  DB error — DEMO MODE:', err.message);
+    console.log('⚠️  DB error:', err.message);
     db = null;
+    return null;
   }
 }
-connectDB();
 
+// Connect on startup
+getDB();
 /* ══════════════════════════════════════
    COMPATIBILITY MAP
 ══════════════════════════════════════ */
@@ -83,10 +79,11 @@ const demoDonors = [
    HELPER - run pg query
 ══════════════════════════════════════ */
 async function q(sql, params=[]) {
-  const { rows } = await db.query(sql, params);
+  const database = await getDB();
+  if (!database) throw new Error('No database connection');
+  const { rows } = await database.query(sql, params);
   return rows;
 }
-
 /* ══════════════════════════════════════
    AUTH MIDDLEWARE
 ══════════════════════════════════════ */
@@ -114,7 +111,7 @@ app.get('/api/test', (req, res) => {
   res.json({
     status: 'ok',
     message: 'eBloodBank API running!',
-    db: db ? 'PostgreSQL connected' : 'demo mode',
+   db: (await getDB()) ? 'PostgreSQL connected' : 'demo mode',
     time: new Date().toISOString(),
     apis: ['POST /api/register','POST /api/login','GET /api/donors','GET /api/search','GET /api/voice/search','GET /api/compatibility/:bg','GET /api/stats','GET /api/alerts','POST /api/alerts','GET /api/requests','POST /api/request','GET /api/donor/dashboard','PUT /api/donor/availability','POST /api/donation/record','GET /api/receiver/dashboard','GET /api/hospital/dashboard','PUT /api/hospital/stock','GET /api/reminders','GET /api/certificate']
   });
