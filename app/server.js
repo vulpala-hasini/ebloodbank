@@ -16,7 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'ebloodbank_secret_key';
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 let db = null;
 async function connectDB() {
