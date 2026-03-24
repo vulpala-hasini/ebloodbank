@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Donor Dashboard — eBloodBank</title>
+  <title>Donor Dashboard — Advanced Blood Bank Management System</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
   <style>
@@ -18,12 +18,10 @@
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
-
-    /* SIDEBAR */
     .sidebar{width:220px;background:var(--primary-dk);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
     .sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;}
     .sidebar-logo i{font-size:1.4rem;color:white;}
-    .sidebar-logo span{font-size:1.1rem;font-weight:700;color:white;}
+    .sidebar-logo span{font-size:0.95rem;font-weight:700;color:white;line-height:1.2;}
     .sidebar-menu{padding:16px 8px;flex:1;}
     .menu-label{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:8px 10px 4px;}
     .menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(255,255,255,0.7);font-size:0.88rem;cursor:pointer;transition:all 0.2s;margin-bottom:2px;text-decoration:none;}
@@ -37,8 +35,6 @@
     .user-role{font-size:0.7rem;color:rgba(255,255,255,0.5);}
     .logout-btn{background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:0.85rem;transition:color 0.2s;}
     .logout-btn:hover{color:white;}
-
-    /* MAIN */
     .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
     .topbar{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
     .topbar-title{font-size:1.1rem;font-weight:600;}
@@ -52,13 +48,9 @@
     .notif{position:relative;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);transition:all 0.2s;}
     .notif:hover{background:var(--bg);}
     .notif-count{position:absolute;top:-4px;right:-4px;background:var(--primary);color:white;font-size:0.6rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
-
-    /* CONTENT */
     .content{padding:24px;flex:1;}
     .section{display:none;}
     .section.active{display:block;}
-
-    /* ALERT BANNER */
     .alert-banner{background:linear-gradient(135deg,var(--primary-dk),var(--primary));border-radius:12px;padding:20px 24px;color:white;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
     .alert-banner-left h3{font-size:1rem;font-weight:600;margin-bottom:4px;}
     .alert-banner-left p{font-size:0.82rem;opacity:0.85;}
@@ -67,8 +59,6 @@
     .timer-box .num{font-size:1.2rem;font-weight:700;line-height:1;}
     .timer-box .lbl{font-size:0.6rem;opacity:0.75;margin-top:2px;}
     .alert-banner-right{font-size:3rem;opacity:0.2;}
-
-    /* STATS */
     .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
     .stat-card{background:white;border-radius:10px;padding:18px 20px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;}
     .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
@@ -78,34 +68,24 @@
     .stat-icon.amber{background:var(--amber-bg);color:var(--amber);}
     .stat-num{font-size:1.6rem;font-weight:700;line-height:1;}
     .stat-lbl{font-size:0.75rem;color:var(--text-light);margin-top:3px;}
-
-    /* CARD */
     .card{background:white;border-radius:10px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
     .card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
     .card-header h3{font-size:0.92rem;font-weight:600;display:flex;align-items:center;gap:8px;}
     .card-header h3 i{color:var(--primary);}
     .card-body{padding:20px;}
     .view-all{font-size:0.78rem;color:var(--primary);text-decoration:none;font-weight:500;}
-
-    /* TABLE */
     .data-table{width:100%;border-collapse:collapse;}
     .data-table th{text-align:left;padding:10px 14px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-light);background:var(--bg);border-bottom:1px solid var(--border);}
     .data-table td{padding:12px 14px;font-size:0.85rem;border-bottom:1px solid var(--border);}
     .data-table tr:last-child td{border-bottom:none;}
     .data-table tr:hover td{background:var(--bg);}
-
-    /* BADGES */
     .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;}
     .badge-green{background:var(--green-bg);color:var(--green);}
     .badge-red{background:var(--red-bg);color:var(--primary);}
     .badge-amber{background:var(--amber-bg);color:var(--amber);}
     .badge-blue{background:var(--blue-bg);color:var(--blue);}
-
-    /* GRID */
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
     .grid-3{display:grid;grid-template-columns:2fr 1fr;gap:20px;}
-
-    /* COMPATIBILITY */
     .bg-display{text-align:center;padding:20px;background:var(--red-bg);border-radius:8px;margin-bottom:16px;}
     .bg-display .bg-big{font-size:2.5rem;font-weight:700;color:var(--primary);line-height:1;}
     .bg-display .bg-lbl{font-size:0.75rem;color:var(--text-light);margin-top:4px;}
@@ -114,8 +94,6 @@
     .chip{padding:4px 12px;border-radius:6px;font-size:0.82rem;font-weight:600;border:1.5px solid;}
     .chip-donate{background:var(--red-bg);color:var(--primary);border-color:#FCA5A5;}
     .chip-receive{background:var(--green-bg);color:var(--green);border-color:#86EFAC;}
-
-    /* REQUESTS */
     .req-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
     .req-item:last-child{border-bottom:none;padding-bottom:0;}
     .req-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
@@ -128,8 +106,6 @@
     .btn-accept{padding:5px 12px;background:var(--primary);color:white;border:none;border-radius:6px;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
     .btn-accept:hover{background:var(--primary-dk);}
     .btn-decline{padding:5px 12px;background:var(--bg);color:var(--text-light);border:1px solid var(--border);border-radius:6px;font-size:0.75rem;font-weight:500;cursor:pointer;}
-
-    /* FORM */
     .form-row{margin-bottom:14px;}
     .form-row label{display:block;font-size:0.8rem;font-weight:500;margin-bottom:5px;}
     .form-row input,.form-row select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:'Roboto',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
@@ -139,15 +115,12 @@
     .compat-select-row{display:flex;gap:10px;margin-bottom:20px;}
     .compat-select-row select{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:'Roboto',sans-serif;font-size:0.9rem;outline:none;}
     .compat-select-row button{padding:9px 20px;background:var(--primary);color:white;border:none;border-radius:7px;font-family:'Roboto',sans-serif;font-weight:500;cursor:pointer;}
-
-    /* TOAST */
     .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
     .toast{padding:10px 16px;border-radius:8px;font-size:0.84rem;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);animation:slideIn 0.3s ease;min-width:240px;}
     .toast.success{background:#F0FFF4;border:1px solid #86EFAC;color:#166534;}
     .toast.error{background:#FFF0F2;border:1px solid #FCA5A5;color:#8B0000;}
     .toast.info{background:var(--blue-bg);border:1px solid #93C5FD;color:#1E3A8A;}
     @keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
-
     @media(max-width:900px){
       .sidebar{display:none;}.main{margin-left:0;}
       .stats-row{grid-template-columns:repeat(2,1fr);}
@@ -157,11 +130,10 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <i class="fa-solid fa-droplet"></i>
-    <span>eBloodBank</span>
+    <span>Advanced Blood Bank Management System</span>
   </div>
   <div class="sidebar-menu">
     <div class="menu-label">Main</div>
@@ -175,6 +147,7 @@
     <a class="menu-item" onclick="showSec('record',this)"><i class="fa-solid fa-syringe"></i> Record Donation</a>
     <div class="menu-label" style="margin-top:12px;">Account</div>
     <a class="menu-item" href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+    <a class="menu-item" href="donor-map.html"><i class="fa-solid fa-map-location-dot"></i> Donor Map</a>
   </div>
   <div class="sidebar-user">
     <div class="user-avatar" id="sideAvatar">R</div>
@@ -186,7 +159,6 @@
   </div>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div class="topbar-title" id="topTitle">Donor Dashboard</div>
@@ -221,22 +193,10 @@
       </div>
 
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon red"><i class="fa-solid fa-droplet"></i></div>
-          <div><div class="stat-num" id="sDon">5</div><div class="stat-lbl">Donations</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fa-solid fa-heart"></i></div>
-          <div><div class="stat-num" id="sLives">15</div><div class="stat-lbl">Lives Saved</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon blue"><i class="fa-solid fa-calendar"></i></div>
-          <div><div class="stat-num" id="sNext">Today</div><div class="stat-lbl">Next Eligible</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon amber"><i class="fa-solid fa-bell"></i></div>
-          <div><div class="stat-num" id="sReqs">2</div><div class="stat-lbl">Requests</div></div>
-        </div>
+        <div class="stat-card"><div class="stat-icon red"><i class="fa-solid fa-droplet"></i></div><div><div class="stat-num" id="sDon">5</div><div class="stat-lbl">Donations</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-heart"></i></div><div><div class="stat-num" id="sLives">15</div><div class="stat-lbl">Lives Saved</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fa-solid fa-calendar"></i></div><div><div class="stat-num" id="sNext">Today</div><div class="stat-lbl">Next Eligible</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><i class="fa-solid fa-bell"></i></div><div><div class="stat-num" id="sReqs">2</div><div class="stat-lbl">Requests</div></div></div>
       </div>
 
       <div class="grid-3">
@@ -283,16 +243,14 @@
       <div class="card">
         <div class="card-header">
           <h3><i class="fa-solid fa-clock-rotate-left"></i> Full Donation History</h3>
-          <span class="badge badge-red">5 donations</span>
+          <span class="badge badge-red" id="histCount">5 donations</span>
         </div>
         <table class="data-table">
-          <thead><tr><th>#</th><th>Date</th><th>Hospital</th><th>Blood Group</th><th>Units</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>1</td><td>15 Oct 2024</td><td>Apollo Hospital, Hyderabad</td><td>O+</td><td>1</td><td><span class="badge badge-green">✓ Completed</span></td></tr>
-            <tr><td>2</td><td>20 Feb 2024</td><td>KIMS Hospital, Hyderabad</td><td>O+</td><td>1</td><td><span class="badge badge-green">✓ Completed</span></td></tr>
-            <tr><td>3</td><td>05 Jun 2023</td><td>Care Hospital, Hyderabad</td><td>O+</td><td>1</td><td><span class="badge badge-green">✓ Completed</span></td></tr>
-            <tr><td>4</td><td>12 Nov 2022</td><td>Yashoda Hospital</td><td>O+</td><td>1</td><td><span class="badge badge-green">✓ Completed</span></td></tr>
-            <tr><td>5</td><td>03 Mar 2022</td><td>Apollo Hospital</td><td>O+</td><td>1</td><td><span class="badge badge-green">✓ Completed</span></td></tr>
+          <thead><tr><th>#</th><th>Date</th><th>Hospital</th><th>Blood Group</th><th>Units</th><th>Certificate</th><th>Status</th></tr></thead>
+          <tbody id="historyTbl">
+            <tr><td>1</td><td>15 Oct 2024</td><td>Apollo Hospital, Hyderabad</td><td>O+</td><td>1</td><td><button onclick="certFor('Donor','O+','Apollo Hospital','15/10/2024')" style="padding:4px 10px;background:var(--green-bg);color:var(--green);border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;">📄 Download</button></td><td><span class="badge badge-green">✓ Completed</span></td></tr>
+            <tr><td>2</td><td>20 Feb 2024</td><td>KIMS Hospital, Hyderabad</td><td>O+</td><td>1</td><td><button onclick="certFor('Donor','O+','KIMS Hospital','20/02/2024')" style="padding:4px 10px;background:var(--green-bg);color:var(--green);border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;">📄 Download</button></td><td><span class="badge badge-green">✓ Completed</span></td></tr>
+            <tr><td>3</td><td>05 Jun 2023</td><td>Care Hospital, Hyderabad</td><td>O+</td><td>1</td><td><button onclick="certFor('Donor','O+','Care Hospital','05/06/2023')" style="padding:4px 10px;background:var(--green-bg);color:var(--green);border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;">📄 Download</button></td><td><span class="badge badge-green">✓ Completed</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -331,7 +289,7 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h3><i class="fa-solid fa-table"></i> Full Chart</h3></div>
+          <div class="card-header"><h3><i class="fa-solid fa-table"></i> Full Compatibility Chart</h3></div>
           <table class="data-table">
             <thead><tr><th>Group</th><th>Donates To</th><th>Receives From</th></tr></thead>
             <tbody>
@@ -367,7 +325,7 @@
               <select id="recBG"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option selected>O+</option><option>O-</option></select>
             </div>
             <button class="btn-submit" onclick="recordDon()"><i class="fa-solid fa-plus"></i> Record Donation</button>
-              <button class="btn-submit" onclick="downloadCertificate()" style="background:#16A34A;margin-top:10px;"><i class="fa-solid fa-download"></i> Download My Certificate</button>
+            <button class="btn-submit" onclick="downloadCertificate()" style="background:#16A34A;margin-top:10px;"><i class="fa-solid fa-download"></i> Download My Certificate</button>
           </div>
         </div>
       </div>
@@ -429,11 +387,29 @@ async function loadDashboard(){
     document.getElementById('sReqs').textContent  = d.pendingRequests?.length||0;
     document.getElementById('sNext').textContent  = d.user.isEligible?'Today!':(d.user.nextEligible||'N/A');
     document.getElementById('myBG').textContent   = d.user.bloodGroup;
+    document.getElementById('sideName').textContent = d.user.firstName || 'Donor';
+    document.getElementById('sideAvatar').textContent = (d.user.firstName||'D').charAt(0).toUpperCase();
+    document.getElementById('sideRole').textContent = '🩸 Donor · '+(d.user.bloodGroup||'O+');
     setCompatChips(d.user.bloodGroup,'donateChips','receiveChips');
     if(d.donationHistory?.length){
       document.getElementById('recentTbl').innerHTML = d.donationHistory.slice(0,3).map(h=>`
-        <tr><td>${new Date(h.donated_at).toLocaleDateString('en-IN')}</td><td>${h.hospital_name}</td><td>${h.units}</td><td><span class="badge badge-green">✓ Done</span></td></tr>
-      `).join('');
+        <tr>
+          <td>${new Date(h.donated_at).toLocaleDateString('en-IN')}</td>
+          <td>${h.hospital_name}</td>
+          <td>${h.units}</td>
+          <td><span class="badge badge-green">✓ Done</span></td>
+        </tr>`).join('');
+      document.getElementById('historyTbl').innerHTML = d.donationHistory.map((h,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td>${new Date(h.donated_at).toLocaleDateString('en-IN')}</td>
+          <td>${h.hospital_name}</td>
+          <td>${d.user.bloodGroup||'O+'}</td>
+          <td>${h.units}</td>
+          <td><button onclick="certFor('${d.user.firstName||'Donor'}','${d.user.bloodGroup||'O+'}','${h.hospital_name}','${new Date(h.donated_at).toLocaleDateString('en-IN')}')" style="padding:4px 10px;background:var(--green-bg);color:var(--green);border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;">📄 Download</button></td>
+          <td><span class="badge badge-green">✓ Completed</span></td>
+        </tr>`).join('');
+      document.getElementById('histCount').textContent = d.donationHistory.length+' donations';
     }
   } catch(e){ console.log('Demo mode'); }
 }
@@ -466,8 +442,7 @@ function renderReqs(){
         <button class="btn-accept" onclick="acceptReq(${r.id})">Accept</button>
         <button class="btn-decline" onclick="declineReq(${r.id})">Decline</button>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
   document.getElementById('dashReqs').innerHTML = html;
   document.getElementById('fullReqs').innerHTML = html;
 }
@@ -548,6 +523,23 @@ async function recordDon(){
   }
 }
 
+function certFor(name, bg, hospital, date) {
+  const url = '/api/certificate?donorName=' + encodeURIComponent(name) +
+              '&bloodGroup='   + encodeURIComponent(bg) +
+              '&hospitalName=' + encodeURIComponent(hospital) +
+              '&donationDate=' + encodeURIComponent(date) +
+              '&units=1';
+  window.open(url, '_blank');
+  toast('📄 Certificate downloading...', 'success');
+}
+
+function downloadCertificate() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const name = (user.firstName || 'Donor') + ' ' + (user.lastName || '');
+  const bg   = user.bloodGroup || 'O+';
+  certFor(name, bg, 'Apollo Hospital', new Date().toLocaleDateString('en-IN'));
+}
+
 function toast(msg,type='info'){
   const w=document.getElementById('toastWrap');
   const el=document.createElement('div');
@@ -558,19 +550,6 @@ function toast(msg,type='info'){
 }
 
 function logout(){ localStorage.clear(); window.location.href='login.html'; }
-function downloadCertificate() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const name = (user.firstName || 'Donor') + ' ' + (user.lastName || '');
-  const bg   = user.bloodGroup || 'O+';
-  const url  = '/api/certificate?' +
-               'donorName='     + encodeURIComponent(name) +
-               '&bloodGroup='   + encodeURIComponent(bg) +
-               '&hospitalName=' + encodeURIComponent('Apollo Hospital') +
-               '&donationDate=' + encodeURIComponent(new Date().toLocaleDateString('en-IN')) +
-               '&units=1';
-  window.open(url, '_blank');
-  toast('📄 Certificate downloading...', 'success');
-}
 </script>
 </body>
 </html>
