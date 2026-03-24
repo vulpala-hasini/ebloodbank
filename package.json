@@ -16,5 +16,8 @@
     "pdfkit": "^0.14.0",
     "pg": "^8.20.0",
     "twilio": "^4.19.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.1.0"
   }
 }
