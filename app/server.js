@@ -83,9 +83,12 @@ const demoDonors = [
    HELPER - run pg query
 ══════════════════════════════════════ */
 async function q(sql, params=[]) {
-  const { rows } = await db.query(sql, params);
+  const database = await getDB();
+  if (!database) throw new Error('No DB connection');
+  const { rows } = await database.query(sql, params);
   return rows;
 }
+
 
 /* ══════════════════════════════════════
    AUTH MIDDLEWARE
